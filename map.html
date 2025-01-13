@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <style>
+    #map { height: 100vh; width: 100%; }
+    .hidden-input { display: none; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <input id="latitude" class="hidden-input" />
+  <input id="longitude" class="hidden-input" />
+  <script>
+    const map = L.map('map').setView([0, 0], 2);
+    L.tileLayer('https://api.maptiler.com/maps/basic/{z}/{x}/{y}.png?key=YOUR_API_KEY', {
+      attribution: '© MapTiler',
+    }).addTo(map);
+
+    let marker;
+    map.on('click', (e) => {
+      const { lat, lng } = e.latlng;
+
+      // Add or update the marker on the map
+      if (marker) {
+        marker.setLatLng([lat, lng]);
+      } else {
+        marker = L.marker([lat, lng]).addTo(map);
+      }
+
+      // Update the hidden input fields with latitude and longitude
+      document.getElementById('latitude').value = lat;
+      document.getElementById('longitude').value = lng;
+    });
+
+    // Send data back to Adalo Webview
+    window.addEventListener('message', (event) => {
+      if (event.data === 'get-location') {
+        const lat = document.getElementById('latitude').value;
+        const lng = document.getElementById('longitude').value;
+        window.parent.postMessage({ lat, lng }, '*');
+      }
+    });
+  </script>
+</body>
+</html>
